@@ -46,7 +46,16 @@ export function DatabaseControls({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      onImport(e.target.files[0]);
+      const file = e.target.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function () {
+        const importedQuery = this.result as string;
+        onImport(file);
+        onLoadQuery(importedQuery);
+      };
+
+      reader.readAsText(file);
     }
   };
 

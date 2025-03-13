@@ -123,6 +123,7 @@ export function SQLiteCompiler() {
           values: [],
         });
       } else {
+        console.log(result);
         setResults({
           columns: result[0].columns,
           values: result[0].values,
@@ -140,40 +141,18 @@ export function SQLiteCompiler() {
     executeQuery(db, query);
   };
 
-  const handleImportDatabase = (file: File) => {
+  const handleImportQuery = (file: File) => {
     const reader = new FileReader();
 
-    reader.onload = async function () {
-      try {
-        const arrayBuffer = this.result as ArrayBuffer;
-        const uint8Array = new Uint8Array(arrayBuffer);
-
-        if (db) {
-          db.close();
-        }
-
-        const initSqlJs = (await import("sql.js")).default;
-
-        const SQL = await initSqlJs({
-          locateFile: (file) => `https://sql.js.org/dist/${file}`,
-        });
-
-        const newDb = new SQL.Database(uint8Array);
-        setDb(newDb);
-
-        executeQuery(
-          newDb,
-          "SELECT name FROM sqlite_master WHERE type='table';"
-        );
-
-        setError(null);
-      } catch (err: any) {
-        console.error("Import error:", err);
-        setError(`Failed to import database: ${err.message}`);
+    reader.onload = function () {
+      const importedQuery = this.result as string;
+      setQuery(importedQuery);
+      if (db) {
+        executeQuery(db, importedQuery);
       }
     };
 
-    reader.readAsArrayBuffer(file);
+    reader.readAsText(file);
   };
 
   const handleExportDatabase = () => {
@@ -185,7 +164,7 @@ export function SQLiteCompiler() {
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = "database.sqlite";
+    a.download = "database.db";
     a.click();
 
     URL.revokeObjectURL(url);
@@ -253,7 +232,7 @@ export function SQLiteCompiler() {
                 </CardTitle>
                 {executionTime !== null && (
                   <span className="text-sm text-muted-foreground">
-                    Execution time: {executionTime.toFixed(2)}ms
+                    Execution time: {executionTime.toFixed(3)}ms
                   </span>
                 )}
               </div>
@@ -285,7 +264,7 @@ export function SQLiteCompiler() {
             </CardHeader>
             <CardContent>
               <DatabaseControls
-                onImport={handleImportDatabase}
+                onImport={handleImportQuery}
                 onExport={handleExportDatabase}
                 onSaveQuery={handleSaveQuery}
                 savedQueries={savedQueries}

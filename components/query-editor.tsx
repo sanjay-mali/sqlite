@@ -8,7 +8,6 @@ import { sql } from "@codemirror/lang-sql";
 import { vscodeDark } from "@uiw/codemirror-theme-vscode";
 import { xcodeLight } from "@uiw/codemirror-theme-xcode";
 import { useTheme } from "next-themes";
-import { keymap } from "@codemirror/view";
 
 interface QueryEditorProps {
   value: string;
@@ -24,23 +23,6 @@ export function QueryEditor({ value, onChange, onExecute }: QueryEditorProps) {
     setMounted(true);
   }, []);
 
-  const executeKeymap = keymap.of([
-    {
-      key: "Ctrl-Enter",
-      run: () => {
-        onExecute();
-        return true;
-      },
-    },
-    {
-      key: "Cmd-Enter",
-      run: () => {
-        onExecute();
-        return true;
-      },
-    },
-  ]);
-
   if (!mounted) {
     return <div className="h-[200px] border rounded-md bg-muted" />;
   }
@@ -50,7 +32,7 @@ export function QueryEditor({ value, onChange, onExecute }: QueryEditorProps) {
       <CodeMirror
         value={value}
         height="200px"
-        extensions={[sql(), executeKeymap]}
+        extensions={[sql()]}
         onChange={onChange}
         theme={theme === "dark" ? vscodeDark : xcodeLight}
         basicSetup={{
@@ -61,9 +43,6 @@ export function QueryEditor({ value, onChange, onExecute }: QueryEditorProps) {
           foldGutter: true,
         }}
       />
-      <div className="p-2 text-xs text-muted-foreground bg-muted/30">
-        Press Ctrl+Enter to execute query
-      </div>
     </div>
   );
 }
